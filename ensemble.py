@@ -4,6 +4,7 @@ import os
 clip = 0.90
 classes = 8
 
+
 def clip_csv(csv_file, clip, classes):
     # Read the submission file
     df = pd.read_csv(csv_file, index_col=0)

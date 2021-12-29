@@ -22,30 +22,31 @@ lr = 1e-2
 epochs = 100
 print(device)
 
+
 class FishDataset(Dataset):
-    
+
     def __init__(self, filenames, labels, transform):
-        
-        self.filenames = filenames # 資料集的所有檔名
-        self.labels = labels # 影像的標籤
-        self.transform = transform # 影像的轉換方式
- 
+
+        self.filenames = filenames  # 資料集的所有檔名
+        self.labels = labels  # 影像的標籤
+        self.transform = transform  # 影像的轉換方式
+
     def __len__(self):
-        
-        return len(self.filenames) # return DataSet 長度
- 
+
+        return len(self.filenames)  # return DataSet 長度
+
     def __getitem__(self, idx):
-        
+
         image = Image.open(self.filenames[idx]).convert('RGB')
-        image = self.transform(image) # Transform image
+        image = self.transform(image)  # Transform image
         label = np.array(self.labels[idx])
-                
-        return image, label # return 模型訓練所需的資訊
+
+        return image, label  # return 模型訓練所需的資訊
 
 
 def split_train_val_data(data_dir):
 
-    normalize = transforms.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225])
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
     # Transformer
     train_transformer = transforms.Compose([
@@ -55,7 +56,7 @@ def split_train_val_data(data_dir):
         transforms.ToTensor(),
         normalize
     ])
-    
+
     test_transformer = transforms.Compose([
         transforms.Resize(224),
         transforms.CenterCrop(224),
@@ -79,44 +80,44 @@ def split_train_val_data(data_dir):
             normalize
         ])
 
-    dataset = ImageFolder(data_dir) 
+    dataset = ImageFolder(data_dir)
     # 建立 8 類的 list
     character = [[] for i in range(len(dataset.classes))]
     # print(character)
     # 將每一類的檔名依序存入相對應的 list
     for x, y in dataset.samples:
         character[y].append(x)
-    
+
     train_inputs, test_inputs = [], []
     train_labels, test_labels = [], []
-    
-    for i, data in enumerate(character): # 讀取每個類別中所有的檔名 (i: label, data: filename)
-        
+
+    for i, data in enumerate(character):  # 讀取每個類別中所有的檔名 (i: label, data: filename)
+
         np.random.seed(42)
         np.random.shuffle(data)
-            
+
         # -------------------------------------------
         # 將每一類都以 8:2 的比例分成訓練資料和測試資料
         # -------------------------------------------
-        
+
         num_sample_train = int(len(data)*0.8)
         num_sample_test = len(data) - num_sample_train
-        
+
         # print(str(i) + ': ' + str(len(data)) + ' | ' + str(num_sample_train) + ' | ' + str(num_sample_test))
-        
-        for x in data[:num_sample_train] : # 前 80% 資料存進 training list
+
+        for x in data[:num_sample_train]:  # 前 80% 資料存進 training list
             train_inputs.append(x)
             train_labels.append(i)
-            
-        for x in data[num_sample_train:] : # 後 20% 資料存進 testing list
+
+        for x in data[num_sample_train:]:  # 後 20% 資料存進 testing list
             test_inputs.append(x)
             test_labels.append(i)
 
     train_dataloader = DataLoader(FishDataset(train_inputs, train_labels, train_transformer),
-                                  batch_size = batch_size, shuffle = True)
+                                  batch_size=batch_size, shuffle=True)
     test_dataloader = DataLoader(FishDataset(test_inputs, test_labels, test_transformer),
-                                  batch_size = batch_size, shuffle = False)
- 
+                                 batch_size=batch_size, shuffle=False)
+
     return train_dataloader, test_dataloader
 
 
@@ -128,6 +129,7 @@ def parse_config():
     parser.add_argument("--model", default="resnext101", type=str)
 
     return parser.parse_args()
+
 
 def select_model(model_name: str):
     """Select model to predict images
@@ -216,7 +218,7 @@ def select_model(model_name: str):
         model = model.to(device)
         optimizer = optim.SGD(model.parameters(), lr=lr)
         summary(model, (3, 299, 299))
-    
+
     elif model_name == 'regnet_x_16gf':
         SAVE_MODEL_PATH = 'model/regnet_x_16gf_batch4_epoch100_best.pth'
         model = models.regnet_x_16gf(pretrained=True)
@@ -225,7 +227,7 @@ def select_model(model_name: str):
         model = model.to(device)
         optimizer = optim.SGD(model.parameters(), lr=lr)
         summary(model, (3, 224, 224))
-    
+
     elif model_name == 'regnet_x_32gf':
         SAVE_MODEL_PATH = 'model/regnet_x_32gf_batch4_epoch100_best.pth'
         model = models.regnet_x_32gf(pretrained=True)
@@ -235,7 +237,6 @@ def select_model(model_name: str):
         optimizer = optim.SGD(model.parameters(), lr=lr)
         summary(model, (3, 224, 224))
 
-    
     return model, optimizer, SAVE_MODEL_PATH
 
 
@@ -284,7 +285,7 @@ if __name__ == '__main__':
             else:
                 outputs = model(x)
                 loss = criterion(outputs, label)
-            
+
             loss.backward()
             optimizer.step()
 

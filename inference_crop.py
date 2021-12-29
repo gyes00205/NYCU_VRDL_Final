@@ -16,6 +16,7 @@ import pandas as pd
 from tqdm import tqdm
 from glob import glob
 
+
 def select_model(model_name: str):
     """Select model to predict images
     Parameters:
@@ -169,8 +170,10 @@ if __name__ == '__main__':
                 img_tensor = img_tensor.unsqueeze(0)
                 img_tensor = img_tensor.to(device)
                 output2 = model2(img_tensor)
-                prob = (F.softmax(output1.data, dim=1) + F.softmax(output2.data, dim=1)
-                + F.softmax(output4.data, dim=1)) / 3
+                prob = (
+                    F.softmax(output1.data, dim=1)
+                    + F.softmax(output2.data, dim=1)
+                    + F.softmax(output4.data, dim=1)) / 3
             elif args.model == 'inception_v3':
                 img_tensor = inception_transformer(img)
                 img_tensor = img_tensor.unsqueeze(0)
